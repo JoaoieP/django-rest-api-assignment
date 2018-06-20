@@ -6,8 +6,8 @@ class UserSerializer(HyperlinkedModelSerializer):
     
     class Meta:
         model = get_user_model()
-        fields = ('email', 'password', 'first_name', 'last_name', 'is_active')
-        read_only_fields = ('is_active')
+        fields = ('email', 'password', 'first_name', 'last_name', 'is_active','url')
+        read_only_fields = ('is_active',)
         extra_kwargs = {
             'password': {'write_only': True}
         }

@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'restCAapp',
 ]
 
+AUTH_USER_MODEL = 'restCAapp.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

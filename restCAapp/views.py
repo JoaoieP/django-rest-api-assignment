@@ -9,12 +9,33 @@ from .serializers import UnauthenticatedUserSerializer
 from .serializers import UserSerializer
 
 
+from rest_framework.decorators import detail_route
+from django.contrib.auth.hashers import check_password
 
 class UserViewSet(ModelViewSet):
     queryset = get_user_model().objects.all()
 
     def perform_create(self, serializer):
         user = serializer.save()
+
+    @detail_route(methods=['patch'])
+    def update(self, request, pk):
+        user = get_user_model().objects.get(id=pk)
+        if (self.request.META['HTTP_TOKEN']):
+            try:
+                    if (str((Token.objects.get(key=self.request.META['HTTP_TOKEN'])).user.pk) != str(pk)):
+                            return Response({"detail": "Token not valid"})
+            except Token.DoesNotExist:
+                return Response({"detail": "Token not valid"})
+            if (check_password(request.data.get("password"),user.password)):
+                user.set_password(request.data.get("new_password"))
+                user.save()
+                return Response({"detail": "Password changed succesfully."})
+            else:
+                return Response({"detail": "Invalid username/password."})
+        else:
+            pass
+            #activation goes here
 
     def get_serializer_class(self):
         try:
@@ -23,7 +44,6 @@ class UserViewSet(ModelViewSet):
         except Token.DoesNotExist:
                 return UnauthenticatedUserSerializer
             
-
 
 
 class BearerAuthToken(ObtainAuthToken):

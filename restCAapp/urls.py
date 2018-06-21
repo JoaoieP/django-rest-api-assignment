@@ -15,6 +15,7 @@ urlpatterns = format_suffix_patterns([
     url(r'^users/(?P<pk>[0-9]+)/$',
         UserViewSet.as_view({
                 'get': 'retrieve',
+                'patch': 'update'
             }),
         name='user-detail'),
     url(r'^token/', BearerAuthToken.as_view())

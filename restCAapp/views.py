@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import render
 from rest_framework.authtoken.models import Token
@@ -17,6 +18,14 @@ class UserViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         user = serializer.save()
+        token=Token.objects.get(user=user)
+        send_mail(
+                'Activation token',
+                'token = {}'.format(token),
+                'activate@codingassignment.so',
+                [user.email],
+                fail_silently=False,
+            )
 
     @detail_route(methods=['patch'])
     def update(self, request, pk):

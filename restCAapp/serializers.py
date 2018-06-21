@@ -48,3 +48,20 @@ class BearerTokenSerializer(serializers.Serializer):
 
         data['user'] = user
         return data
+
+
+class UnauthenticatedUserSerializer(UserSerializer):
+    
+    class Meta:
+        model = get_user_model()
+        fields = ('password', 'first_name', 'is_active','url',)
+        read_only_fields = ('is_active',)
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        user = get_user_model().objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user

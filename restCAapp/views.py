@@ -5,6 +5,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .serializers import BearerTokenSerializer
+from .serializers import UnauthenticatedUserSerializer
 from .serializers import UserSerializer
 
 
@@ -16,7 +17,12 @@ class UserViewSet(ModelViewSet):
         user = serializer.save()
 
     def get_serializer_class(self):
-        return UserSerializer
+        try:
+            Token.objects.get(key=self.request.META['HTTP_TOKEN'])
+            return UserSerializer
+        except Token.DoesNotExist:
+                return UnauthenticatedUserSerializer
+            
 
 
 

@@ -1,6 +1,8 @@
 from django.conf.urls import url
+from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.urlpatterns import format_suffix_patterns
 from .views import UserViewSet
+from .views import BearerAuthToken
 
 urlpatterns = format_suffix_patterns([
     url(r'^users/$',
@@ -15,4 +17,5 @@ urlpatterns = format_suffix_patterns([
                 'get': 'retrieve',
             }),
         name='user-detail'),
+    url(r'^token/', BearerAuthToken.as_view())
 ])

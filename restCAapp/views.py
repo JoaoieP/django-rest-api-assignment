@@ -1,7 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from .serializers import BearerTokenSerializer
 from .serializers import UserSerializer
+
 
 
 class UserViewSet(ModelViewSet):
@@ -12,3 +17,17 @@ class UserViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         return UserSerializer
+
+
+
+class BearerAuthToken(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = BearerTokenSerializer(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key
+        })

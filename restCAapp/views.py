@@ -1,16 +1,16 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
+from django.db import IntegrityError
 from django.shortcuts import render
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .serializers import BearerTokenSerializer
 from .serializers import UnauthenticatedUserSerializer
 from .serializers import UserSerializer
 
-
-from rest_framework.decorators import detail_route
-from django.contrib.auth.hashers import check_password
 
 class UserViewSet(ModelViewSet):
     queryset = get_user_model().objects.all()
@@ -56,6 +56,11 @@ class UserViewSet(ModelViewSet):
             Token.objects.get(key=self.request.META['HTTP_TOKEN'])
             return UserSerializer
         except Token.DoesNotExist:
+                return UnauthenticatedUserSerializer
+        except KeyError:
+            if(self.request.META['REQUEST_METHOD'] == 'POST'):
+                return UserSerializer
+            else:
                 return UnauthenticatedUserSerializer
             
 

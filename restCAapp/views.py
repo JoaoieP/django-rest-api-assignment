@@ -21,21 +21,35 @@ class UserViewSet(ModelViewSet):
     @detail_route(methods=['patch'])
     def update(self, request, pk):
         user = get_user_model().objects.get(id=pk)
-        if (self.request.META['HTTP_TOKEN']):
+        try: 
+            if (self.request.META['HTTP_TOKEN']):
+                try:
+                    token=Token.objects.get(key=self.request.META['HTTP_TOKEN'])
+                    if (str(token.user.pk) != str(pk)):
+                        return Response({"detail": "Token not valid"})
+                    if (check_password(request.data.get("password"),user.password)):
+                        user.set_password(request.data.get("new_password"))
+                        user.save()
+                        return Response({"detail": "Password changed succesfully."})
+                    else:
+                        return Response({"detail": "Password incorrect."})
+                except Token.DoesNotExist:
+                    return Response({"detail": "Token not valid"})
+        except KeyError:
             try:
-                    if (str((Token.objects.get(key=self.request.META['HTTP_TOKEN'])).user.pk) != str(pk)):
-                            return Response({"detail": "Token not valid"})
+                print(request.data.get("token"))
+                token=Token.objects.get(key=request.data.get("token"))
+                print(token)
+                if (str(token.user.pk) != str(pk)):
+                    return Response({"detail": "Token not valid"})
+                else:
+                    user.is_active = True
+                    user.save()
+                    serializer = UserSerializer(user,context={'request': request})
+                    return Response(serializer.data)
             except Token.DoesNotExist:
-                return Response({"detail": "Token not valid"})
-            if (check_password(request.data.get("password"),user.password)):
-                user.set_password(request.data.get("new_password"))
-                user.save()
-                return Response({"detail": "Password changed succesfully."})
-            else:
-                return Response({"detail": "Invalid username/password."})
-        else:
-            pass
-            #activation goes here
+                    return Response({"detail": "Token not valid"})
+
 
     def get_serializer_class(self):
         try:

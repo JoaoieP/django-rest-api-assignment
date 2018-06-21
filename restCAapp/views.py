@@ -29,6 +29,8 @@ class UserViewSet(ModelViewSet):
 
     @detail_route(methods=['patch'])
     def update(self, request, pk):
+        """Updates account. When head has a token it looks for password, and new password in body of request. Password is changed if the given password is correct.
+        If no token is present in the head it looks for a token in the body to activate account"""
         user = get_user_model().objects.get(id=pk)
         try: 
             if (self.request.META['HTTP_TOKEN']):
@@ -61,6 +63,7 @@ class UserViewSet(ModelViewSet):
 
 
     def get_serializer_class(self):
+        """Hides email and last name if no valid auth token is in the head of GET requests"""
         try:
             Token.objects.get(key=self.request.META['HTTP_TOKEN'])
             return UserSerializer
